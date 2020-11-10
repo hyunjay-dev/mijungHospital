@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image⁄x-icon" href="img/logo2.png">
+    <title>로그인</title>
+    <link rel='stylesheet' href='./CSS/login.css'>
+    <link rel='stylesheet' href='./CSS/default_copy.css'>
+    <link rel='stylesheet' href='./CSS/header.css'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="./source/includeHTML.js"></script>
+</head>
+
+<body>
+
+    <body>
+        <div class="wrapper">
+            <div class='inner-wrapper'>
+                <header class="header">
+                    <!-- 로고 부분 -->
+                    <div class='header-left'>
+                        <a href=' index.html'>
+                            <img src='img/logo2.png ' alt='logo '>
+
+                            <span>미정이네<br>
+                            <strong>동물병원</strong></span>
+                        </a>
+                    </div>
+                    <!-- 메뉴 부분 -->
+                    <div class='header-center '>
+                        <ul class=''>
+                            <li class=''>
+                                <a href='chart.html'>
+                                    <span>병원소개</span>
+                                    <!-- <ul class=''>
+                            <li class=''><a href=''>나와라</a></li>
+                            <li class=''><a href=''>나와라</a></li>
+                            <li class=''><a href=''>나와라</a></li>
+                        </ul> -->
+                                </a>
+                            </li>
+                            <li class=' '>
+                                <a href='index_rev1.html'>
+                                    <span>진료예약</span>
+                                </a>
+                            </li>
+                            <li class=' '>
+                                <a href='boardIndex.html'>
+                                    <span>Q & A</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- 로그인 부분 -->
+                    <div class='header-right' id='app'>
+                        <ul class=' ' v-if="!isLogin">
+                            <li class=' '>
+                                <a href='login.html'>
+                                    <h2>로그인</h2>
+                                </a>
+                            </li>
+                            <li class=' '>
+                                <a href='register.html'>
+                                    <h2>회원가입</h2>
+                                </a>
+                            </li>
+                        </ul>
+                        <ul class=' ' v-if="isLogin">
+                            <li class=' '>
+                                <a href="#" @click="logout">
+                                    <h2>로그아웃</h2>
+                                </a>
+                            </li>
+                            <li class=' ' v-if="localStorage.getItem('animal_admin') == 0">
+                                <a href='mypage.html'>
+                                    <h2>마이페이지</h2>
+                                </a>
+                            </li>
+                            <li class=' ' v-if="localStorage.getItem('animal_admin') == 1">
+                                <a href='Adminpage.html'>
+                                    <h2>관리자페이지</h2>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </header>
+                <br><br><br>
+
+
+                <section class='visual'>
+                    <div class='con'>
+                        <div class='slide'>
+                            <div class='title'>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class='slideTwo'>
+                            <div class='title'>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="loginapp">
+                        <section class="container">
+                            <article class="half">
+                                <h1>로그인</h1>
+                                <div class="tabs">
+
+                                </div>
+                                <div class="content">
+                                    <div class="signin-cont cont">
+                                        <form action="#" method="post" @submit.prevent="login" enctype="multipart/form-data">
+                                            ID<input type="email" name="custId" id="custId" v-model="custId" class="inpt" required="required" placeholder="아이디를 입력해주세요"> Password
+
+                                            <input type="password" name="custPassword" id="custPassword" v-model="custPassword" class="inpt" required="required" placeholder="비밀번호를 입력해주세요">
+
+                                            <div class="submit-wrap">
+                                                <span v-if="!idCheck" style="margin-left:2%; color: red;">아이디와 비밀번호를 확인해주세요.<br></span>
+                                                <input type="submit" value="Sign in" class="submit">
+                                                <a href="findIdPassword.html" class="more">Forgot your ID / password?</a>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article>
+                            <div class="half bg"></div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+            </form>
+
+            </section>
+
+            <footer include-html='./source/footer.html'>
+            </footer>
+        </div>
+
+        <script>
+            let navapp = new Vue({
+                el: "#app",
+                data: {
+                    isLogin: false
+                },
+                mounted() {
+                    if (localStorage.getItem("animal_login") != null) {
+                        this.isLogin = true;
+                    }
+                },
+                methods: {
+                    logout() {
+                        let con_logout = confirm("로그아웃 하시겠습니까");
+                        if (con_logout) {
+                            localStorage.removeItem("info");
+                            localStorage.removeItem("animal_name");
+                            localStorage.removeItem("animal_login");
+                            localStorage.removeItem("animal_admin");
+                            localStorage.removeItem("onceRev");
+                            location.href = "index.html";
+                        }
+                    }
+                }
+            });
+            let app = new Vue({
+                el: '#loginapp',
+                data() {
+                    return {
+                        loading: true,
+                        errored: false,
+                        custId: "",
+                        custPassword: "",
+                        custName: "",
+                        info: [],
+                        idCheck: true
+
+                    }
+                },
+                methods: {
+                    login() {
+                        if (this.custId == " ") {
+                            alert("아이디를 입력하세요 ");
+                            return;
+                        }
+                        if (this.custPassword == " ") {
+                            alert("비밀번호를 입력하세요 ");
+                            return;
+                        }
+                        axios
+                            .post("http://localhost:7000/mijung/login", {
+                                custId: this.custId,
+                                custPassword: this.custPassword,
+                            })
+                            .then(response => {
+                                console.log(response.data);
+                                if (response.data == "") {
+                                    this.idCheck = false
+
+                                } else {
+                                    this.info = response.data
+                                        //this.info = response.data.;
+                                    localStorage.setItem("info", JSON.stringify(this.info));
+                                    localStorage.setItem("animal_login", this.info.custId);
+                                    localStorage.setItem("animal_admin", this.info.custAdmin);
+                                    if (response.data.custCanRev == 0) {
+                                        localStorage.setItem("onceRev", 1);
+                                    } else {
+                                        localStorage.removeItem("onceRev");
+                                    }
+                                    alert(response.data.custName + "님이 로그인하였습니다.");
+                                    location.href = "index.html";
+                                }
+
+                            })
+                            .catch(error => {
+                                console.log(error);
+                                this.errored = true
+                            })
+                            .finally(() => this.loading = false)
+                    }
+                }
+            });
+        </script>
+    </body>
+    <script>
+        includeHTML();
+    </script>
+
+</html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="BoardMapper">
+
+
+
+<insert id="addBoard" parameterType="board">
+	INSERT board
+	(bd_title, bd_content, bd_view, bd_is_Secret, cust_id, cust_name)
+	VALUES (#{bdTitle}, #{bdContent},#{bdView},#{bdIsSecret},#{custId},#{custName})
+</insert>
+
+<update id="updateBoard" parameterType="board">
+	UPDATE board
+	SET bd_title=#{bdTitle}, bd_content=#{bdContent}, bd_is_Secret=#{bdIsSecret},bd_view=#{bdView}
+	WHERE bd_ID=#{bdID}
+</update>
+
+<delete id="deleteBoard" parameterType="int">
+	DELETE FROM board
+	WHERE bd_ID=#{bdID}
+</delete>
+
+<update id="replyBoard" parameterType="board">
+	UPDATE board
+	SET bd_Reply=#{bdReply}
+	WHERE bd_ID=#{bdID}
+</update>
+
+<select id="findView" parameterType="int" resultType="board">
+	SELECT bd_View FROM board
+	WHERE bd_ID=#{bdID}
+</select>
+
+<select id="getAllBoard" resultType="board" parameterType="int">
+	SELECT bd_ID, bd_title, bd_content, bd_view, bd_Date, bd_is_Secret, bd_Reply, cust_id, cust_name
+	FROM board
+	ORDER BY bd_ID desc
+	LIMIT #{VALUE}, 5
+</select>
+
+<select id="getBoard" parameterType="int" resultType="board">
+	SELECT bd_ID, bd_title, bd_content, bd_view, bd_Date, bd_is_Secret, bd_Reply, cust_id, cust_name
+	FROM board
+	WHERE bd_ID=#{bdID}
+</select>
+<select id="countBoard" resultType="int">
+	SELECT COUNT(bd_ID) FROM board
+</select>
+<select id="searchBoardByTitle" parameterType="search" resultType="board">
+	SELECT bd_ID, bd_title, bd_content, bd_view, bd_Date, bd_is_Secret, bd_Reply, cust_id, cust_name
+	FROM board
+	WHERE bd_title LIKE '%' #{searchContent} '%'
+	ORDER BY bd_ID desc
+	LIMIT #{page}, 5
+</select>
+<select id="countBoardByTitle" resultType="int" parameterType="string">
+	SELECT COUNT(bd_ID) FROM board
+	WHERE bd_title LIKE '%' #{VALUE} '%'
+</select>
+<select id="searchBoardByContent" parameterType="search" resultType="board">
+	SELECT bd_ID, bd_title, bd_content, bd_view, bd_Date, bd_is_Secret, bd_Reply, cust_id, cust_name
+	FROM board
+	WHERE bd_content LIKE '%' #{searchContent} '%'
+	ORDER BY bd_ID desc
+	LIMIT #{page}, 5
+</select>
+<select id="countBoardByContent" resultType="int" parameterType="string">
+	SELECT COUNT(bd_ID) FROM board
+	WHERE bd_content LIKE '%' #{VALUE} '%'
+</select>
+
+</mapper>
+	

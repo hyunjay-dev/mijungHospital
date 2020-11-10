@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image⁄x-icon" href="img/logo2.png">
+    <title>마이페이지</title>
+    <link rel='stylesheet' href='./CSS/mypage.css'>
+    <link rel='stylesheet' href='./CSS/default_copy.css'>
+    <link rel='stylesheet' href='./CSS/intro.css'>
+    <link rel='stylesheet' href='./CSS/header.css'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="./source/includeHTML.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class='inner-wrapper'>
+            <header class="header">
+                <!-- 로고 부분 -->
+                <div class='header-left'>
+                    <a href=' index.html'>
+                        <img src='img/logo2.png ' alt='logo '>
+                        <span>미정이네<br>
+                        <strong>동물병원</strong></span>
+                    </a>
+                </div>
+                <!-- 메뉴 부분 -->
+                <div class='header-center '>
+                    <ul class=''>
+                        <li class=''>
+                            <a href='chart.html'>
+                                <span>병원소개</span>
+                                <!-- <ul class=''>
+                        <li class=''><a href=''>나와라</a></li>
+                        <li class=''><a href=''>나와라</a></li>
+                        <li class=''><a href=''>나와라</a></li>
+                    </ul> -->
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='index_rev1.html'>
+                                <span>진료예약</span>
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='boardIndex.html'>
+                                <span>Q & A</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- 로그인 부분 -->
+                <div class='header-right' id='logapp'>
+                    <ul class=' ' v-if="!isLogin">
+                        <li class=' '>
+                            <a href='login.html'>
+                                <h2>로그인</h2>
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='register.html'>
+                                <h2>회원가입</h2>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class=' ' v-if="isLogin">
+                        <li class=' '>
+                            <a href="#" @click="logout">
+                                <h2>로그아웃</h2>
+                            </a>
+                        </li>
+                        <li class=' ' v-if="localStorage.getItem('animal_admin') == 0">
+                            <a href='mypage.html'>
+                                <h2>마이페이지</h2>
+                            </a>
+                        </li>
+                        <li class=' ' v-if="localStorage.getItem('animal_admin') == 1">
+                            <a href='Adminpage.html'>
+                                <h2>관리자페이지</h2>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+            <section class='visual'>
+                <div class='slideTwo'>
+                    <div class='title'>
+                        <span></span>
+                    </div>
+                </div>
+                <div id="appInfo">
+                    <table class="type06">
+                        <h2 style="text-align: center; margin-top: 1%; font-size: 25px;">회원 정보관리</h2>
+                        <br>
+                        <tr>
+                            <th>ID</th>
+                            <td>{{info.custId}}</td>
+                        </tr>
+                        <tr>
+                            <th>비밀번호 변경</th>
+                            <td>
+                                <div v-if="changePwButtonClick">
+                                    <form action="#" method="post" enctype="multipart/form-data" @submit.prevent="changePassword2">
+                                        New Password<input type="password" name="custPassword1" v-model="custPassword1" id="custPassword1" class="inpt" required="required" placeholder="새로운 비밀번호를 입력해주세요"><br> New Password Confirm<input type="password"
+                                            name="custPassword2" id="custPassword2" v-model="custPassword2" @keyup="pwCheck()" class="inpt" required="required" placeholder="다시 한번 입력해주세요">
+                                        <span style="color: red;" v-if="!custPwCheck">위 비밀번호와 일치하지 않습니다.</span>
+                                        <span style="color: blue;" v-if="custPwCheck && custPassword1 != '' && custPassword2 != ''">위 비밀번호와 일치합니다.</span>
+                                        <div class="submit-wrap">
+                                            <input id="buttonTable1" type="submit" class="submit" value="비밀번호 변경">
+                                            <input id="buttonTable1" type="button" value="Back" onclick="back()">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div v-if="!changePwButtonClick">
+                                    <button id="buttonTable1" @click="changePassword1()" type="button" style="text-align: center;">비밀번호 변경</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>이름</th>
+                            <td>{{info.custName}}</td>
+                        </tr>
+                        <tr>
+                            <th>연락처</th>
+                            <td>{{info.custPhone}}</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><button id="buttonTable1" @click="dropCustomer()" type="button" style="text-align: center;">회원 탈퇴</button></td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="app">
+                    <table class="type05">
+                        <div v-if="infoCheck == ''">
+                            <thead>
+                                <h2 style="text-align: center; margin-top: 5%; font-size: 25px;">예약 상세내역</h2>
+                            </thead><br>
+                            <tr>
+                                <th>예약번호</th>
+                                <th>예약날짜</th>
+                                <th>담당의사</th>
+                                <th>진료내용</th>
+                                <th>동물타입</th>
+                                <th>예약취소</th>
+
+                            </tr>
+                            <tr v-for="rev in info">
+                                <td>{{rev.revId}}</td>
+                                <td>{{rev.revDate}}</td>
+                                <td>{{rev.revDoctor}}</td>
+                                <td>{{rev.revComment}}</td>
+                                <td>{{rev.revAnimalType}}</td>
+                                <td><input id="buttonTable1" type="button" @click="cancelReservation(rev.revId)" value="취소" v-if="Date.parse(rev.revDate) > Date.now()"></td>
+                            </tr>
+                        </div>
+                    </table>
+                    <div v-else>
+                        <img src="https://www.flaticon.com/svg/static/icons/svg/0/49.svg" style="opacity: 0.5; width: 100px; display: block; margin: 0px auto;"><br><br>
+                        <h2 style="display: block; margin: 0px auto; opacity: 0.5; text-align: center;">예약내역이 없습니다.</h2>
+                    </div>
+                    <table class="type05">
+                        <div>
+                            <thead>
+                                <h2 style="text-align: center; margin-top: 5%; font-size: 25px;">지난 예약 상세내역</h2>
+                            </thead><br>
+                            <tr>
+                                <th>예약번호</th>
+                                <th>예약날짜</th>
+                                <th>담당의사</th>
+                                <th>진료내용</th>
+                                <th>동물타입</th>
+                            </tr>
+                            <tr v-for="rev in hisInfo">
+                                <td>{{rev.revHisId}}</td>
+                                <td>{{rev.revHisDate}}</td>
+                                <td>{{rev.revHisDoctor}}</td>
+                                <td>{{rev.revHisComment}}</td>
+                                <td>{{rev.revHisAnimalType}}</td>
+                            </tr>
+                        </div>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <footer include-html='./source/footer.html'>
+        </footer>
+    </div>
+    <script>
+        function back() {
+            location.reload();
+        }
+        let navapp = new Vue({
+            el: "#loginapp ",
+            data: {
+                isLogin: false
+            },
+            mounted() {
+                if (localStorage.getItem("animal_login ") != null) {
+                    this.isLogin = true;
+                }
+            },
+            methods: {
+                logout() {
+                    let con_logout = confirm("로그아웃 하시겠습니까 ");
+                    if (con_logout) {
+                        localStorage.removeItem("info ");
+                        localStorage.removeItem("animal_name ");
+                        localStorage.removeItem("animal_login ");
+                        localStorage.removeItem("animal_admin ");
+                        localStorage.removeItem("onceRev ");
+                        location.href = "index.html ";
+                    }
+                }
+            }
+        });
+        let id = localStorage.getItem("animal_login");
+        let app = new Vue({
+            el: "#app",
+            data() {
+                return {
+                    info: [],
+                    hisInfo: [],
+                    custId: id,
+                    loading: true,
+                    errored: false,
+                    infoCheck: ""
+                }
+            },
+            mounted() {
+                axios
+                    .get("http://localhost:7000/mijung/getReservation/" + this.custId)
+                    .then(response => {
+                        console.log(response.data.reverse())
+                        this.info = response.data.reverse();
+                        this.infoCheck = JSON.stringify(this.info);
+
+                    })
+                    .catch(e => {
+                        console.log(e);
+                        this.errored = true;
+                    })
+                    .finally(() => this.loading = false)
+                axios
+                    .get("http://localhost:7000/mijung/findReservationHistoryById/" + this.custId)
+                    .then(response => {
+                        this.hisInfo = response.data.reverse();
+                    })
+                    .catch(e => {
+                        console.log(e);
+                        this.errored = true;
+                    })
+                    .finally(() => this.loading = false)
+                console.log(this.infoCheck == "")
+
+                console.log(JSON.stringify(this.info) == "[]")
+
+            },
+            methods: {
+                cancelReservation(revId) {
+                    let con_cancel = confirm("예약을 취소하시겠습니까")
+                    if (con_cancel) {
+                        axios
+                            .delete("http://localhost:7000/mijung/cancelReservation/" + revId)
+                            .then(() => {
+                                alert("예약을 취소하였습니다");
+                                location.reload(true);
+                            })
+                            .catch(e => {
+                                console.log(e);
+                                this.errored = true;
+                            })
+                            .finally(() => {
+                                this.loading = false;
+                            })
+                        axios
+                            .put("http://127.0.0.1:7000/mijung/changeCustRev1/" + id)
+                            .then(response => {
+                                localStorage.removeItem("onceRev");
+                            })
+                            .catch(error => {
+                                console.log(error);
+                                this.errored = true
+                            })
+                            .finally(() => this.loading = false)
+                        axios
+                            .get("http://localhost:7000/mijung/findId/" + JSON.parse(localStorage.getItem("info")).custName + "/" + JSON.parse(localStorage.getItem("info")).custPhone)
+                            .then(response => {
+                                localStorage.setItem("info", JSON.stringify(response.data))
+                                console.log(response.data)
+                                location.reload();
+                            })
+                            .catch(error => {
+                                console.log(error)
+                                this.errored = true
+                            })
+                            .finally(() => this.loading = false)
+                        axios
+                            .delete("http://localhost:7000/mijung/deleteReservationHistory/" + Number(revId))
+                            .then(() => {
+                                location.reload();
+
+                            })
+                            .catch(e => {
+                                console.log(e);
+                                this.errored = true;
+                            })
+                            .finally(() => {
+                                this.loading = false;
+                            })
+                    }
+                }
+
+            },
+        })
+        new Vue({
+            el: "#logapp",
+            data: {
+                isLogin: false
+            },
+            mounted() {
+                if (localStorage.getItem("animal_login") != null) {
+                    this.isLogin = true;
+                }
+            },
+            methods: {
+                logout() {
+                    let con_logout = confirm("로그아웃 하시겠습니까");
+                    if (con_logout) {
+                        localStorage.removeItem("info");
+                        localStorage.removeItem("animal_name");
+                        localStorage.removeItem("animal_login");
+                        localStorage.removeItem("animal_admin");
+                        location.href = "index.html"
+                    }
+                }
+            }
+        });
+        new Vue({
+            el: "#appInfo",
+            data() {
+                return {
+                    info: null,
+                    custName: JSON.parse(localStorage.getItem("info")).custName,
+                    custPhone: JSON.parse(localStorage.getItem("info")).custPhone,
+                    custId: JSON.parse(localStorage.getItem("info")).custId,
+                    custPassword1: '',
+                    custPassword2: '',
+                    custPwCheck: true,
+                    changePwButtonClick: false,
+                    errored: false,
+                    resultIdFail: false
+                }
+            },
+            mounted() {
+                axios
+                    .get("http://localhost:7000/mijung/findId/" + this.custName + "/" + this.custPhone)
+                    .then(response => {
+                        this.info = response.data
+                    })
+                    .catch(error => {
+                        this.errored = true
+                    })
+            },
+            methods: {
+                dropCustomer() {
+                    let con_drop1 = confirm("탈퇴하시겠습니까?");
+                    if (!con_drop1) {
+                        return;
+                    }
+                    let con_drop = confirm("정말로 탈퇴하시겠습니까?");
+                    if (con_drop) {
+                        axios
+                            .delete("http://localhost:7000/mijung/cancelReservation/" + id)
+                            .then(() => {
+                                localStorage.removeItem("onceRev");
+                            })
+                            .catch(e => {
+                                console.log(e);
+                                this.errored = true;
+                            })
+                            .finally(() => {
+                                this.loading = false;
+                            }),
+                            axios
+                            .delete("http://localhost:7000/mijung/dropCustomer/" + id)
+                            .then(() => {
+                                alert("탈퇴하셨습니다.");
+                                localStorage.removeItem("info");
+                                localStorage.removeItem("animal_name");
+                                localStorage.removeItem("animal_login");
+                                localStorage.removeItem("animal_admin");
+                                localStorage.removeItem("onceRev");
+                                location.href = "index.html";
+                            })
+                            .catch(e => {
+                                console.log(e);
+                                this.errored = true;
+                            })
+                            .finally(() => {
+                                this.loading = false;
+                            })
+                    }
+                },
+                pwCheck() {
+                    if (this.custPassword1 != this.custPassword2) {
+                        this.custPwCheck = false;
+                    } else {
+                        this.custPwCheck = true;
+                    }
+                },
+                changePassword1() {
+                    let changePw = confirm("비밀번호를 변경하시겠습니까?");
+                    if (changePw) {
+                        this.changePwButtonClick = true;
+                    }
+                },
+                changePassword2() {
+                    axios
+                        .put("http://localhost:7000/mijung/changePassword/" + this.custId + "/" + this.custPassword1)
+                        .then(response => {
+                            if (!this.custPwCheck) {
+                                return alert("비밀번호가 일치하지 않습니다.");
+                            } else {
+                                alert("비밀번호가 정상적으로 변경되었습니다.");
+                                location.reload();
+                            }
+                        })
+                        // .then(response => {
+                        //     alert("비밀번호가 변경되었습니다. 로그인하세요. ");
+                        //     location.href = "login.html ";
+                        // })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                }
+            }
+        });
+    </script>
+    <script>
+        includeHTML();
+    </script>
+</body>
+
+</html>

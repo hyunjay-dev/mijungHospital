@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image⁄x-icon" href="img/logo2.png">
+    <title>글 수정</title>
+    <link rel='stylesheet' href='./CSS/default.css'>
+    <link rel='stylesheet' href='./CSS/header.css'>
+    <link rel='stylesheet' href='./CSS/footer.css'>
+    <link rel='stylesheet' href='./CSS/boardUpdate.css'>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="./source/includeHTML.js"></script>
+    <script src="./source/isLogin.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class='inner-wrapper'>
+            <header>
+                <!-- 로고 부분 -->
+                <div class='header-left'>
+                    <a href=' index.html'>
+                        <img src='img/logo2.png ' alt='logo '>
+
+                        <span>미정이네<br>
+                            <strong>동물병원</strong></span>
+                    </a>
+                </div>
+                <!-- 메뉴 부분 -->
+                <div class='header-center '>
+                    <ul class=''>
+                        <li class=''>
+                            <a href='chart.html'>
+                                <span>병원소개</span>
+                                <!-- <ul class=''>
+                        <li class=''><a href=''>나와라</a></li>
+                        <li class=''><a href=''>나와라</a></li>
+                        <li class=''><a href=''>나와라</a></li>
+                    </ul> -->
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='index_rev1.html'>
+                                <span>진료예약</span>
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='boardIndex.html'>
+                                <span>Q & A</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- 로그인 부분 -->
+                <div class='header-right' id='loginApp'>
+                    <ul class=' ' v-if="!isLogin">
+                        <li class=' '>
+                            <a href='login.html'>
+                                <h2>로그인</h2>
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='register.html'>
+                                <h2>회원가입</h2>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class=' ' v-if="isLogin">
+                        <li class=' '>
+                            <a href="#" @click="logout">
+                                <h2>로그아웃</h2>
+                            </a>
+                        </li>
+                        <li class=' ' v-if="localStorage.getItem('animal_admin') == 0">
+                            <a href='mypage.html'>
+                                <h2>마이페이지</h2>
+                            </a>
+                        </li>
+                        <li class=' ' v-if="localStorage.getItem('animal_admin') == 1">
+                            <a href='Adminpage.html'>
+                                <h2>관리자페이지</h2>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+            <br><br><br>
+            <section class='visual'>
+                <div class='slide'>
+                    <!-- 상단 이미지 -->
+                    <div class='title'>
+                        <span>Q & A</span>
+                    </div>
+                </div>
+                <br>
+                <div id="app">
+                    <div class=''>
+                        <div class='question'>
+                            <h1>질문 수정하기</h1>
+                        </div>
+                    </div>
+                    <form action="" method="PUT" name="frm" @submit.prevent="updateBoard" class='write'>
+                        제목: <br><input type="text" id="title" v-model='info.bdTitle'><br><br> 내용:<br>
+                        <textarea id="content" v-model='info.bdContent'></textarea><br><br> 비밀글
+                        <input type="checkbox" id="secretKey" @click='check()' v-model="secretKey" checked="secretKey">
+                        <label for="secretKey"></label>
+                        <input type="submit" id="buttonTable1" value="수정하기">
+                    </form>
+                </div>
+
+            </section>
+            <footer include-html='./source/footer.html'></footer>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js "></script>
+    <script>
+        new Vue({
+            el: "#loginApp",
+            data: {
+                isLogin: false
+            },
+            mounted() {
+                if (localStorage.getItem("animal_login") != null) {
+                    this.isLogin = true;
+                }
+            },
+            methods: {
+                logout() {
+                    let con_logout = confirm("로그아웃 하시겠습니까");
+                    if (con_logout) {
+                        localStorage.removeItem("info");
+                        localStorage.removeItem("animal_name");
+                        localStorage.removeItem("animal_login");
+                        localStorage.removeItem("animal_admin");
+                        localStorage.removeItem("onceRev");
+                        location.reload(true);
+                    }
+                }
+            }
+        });
+        new Vue({
+            el: "#app ",
+            data() {
+                return {
+                    info: null,
+                    loading: true,
+                    errored: false,
+                    secretKey: false
+                }
+            },
+            mounted() {
+                let bdID = location.href.split('?')[1].split('=')[1];
+
+                axios
+                    .get("http://localhost:7000/mijung/getBoard/ " + bdID)
+                    .then(response => {
+                        this.info = response.data;
+                        if (this.info.bdIsSecret == 1) {
+                            this.secretKey = true;
+                        } else {
+                            this.secretKey = false;
+                        }
+                    })
+                    .catch(e => {
+                        console.log(e);
+                        this.errored = true;
+                    })
+                    .finally(() => this.loading = false)
+            },
+            methods: {
+                updateBoard() {
+                    const board = {
+                        bdID: this.info.bdID,
+                        bdTitle: this.info.bdTitle,
+                        bdContent: this.info.bdContent,
+                        bdIsSecret: this.info.bdIsSecret,
+                    };
+                    axios
+                        .put("http://localhost:7000/mijung/updateBoard", board)
+                        .then((response) => {
+                            console.log(response);
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            this.errored = true;
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                            location.href = "./boardDetail.html?bdID=" + this.info.bdID;
+                        })
+                },
+                check() {
+                    let checked = document.getElementById('secretKey');
+                    if (checked.checked) {
+                        this.info.bdIsSecret = 1;
+                    } else {
+                        this.info.bdIsSecret = 0;
+                    }
+                }
+            }
+        });
+        includeHTML();
+    </script>
+</body>
+
+
+</html>

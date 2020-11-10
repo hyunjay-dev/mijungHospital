@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="shortcut icon" type="image⁄x-icon" href="img/logo2.png">
+    <meta charset="UTF-8">
+    <title>예약페이지</title>
+    <script src='./WEB-INF/lib/main.js'></script>
+    <link href='./WEB-INF/lib/main.css' rel='stylesheet' />
+    <link rel='stylesheet' href='./CSS/rev_css.css'>
+    <link rel='stylesheet' href='./CSS/default_copy.css'>
+    <link rel='stylesheet' href='./CSS/header.css'>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="./source/includeHTML.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            //로컬스토리지에서 예약된 날짜 json 파일 불러오기
+            var revInfo = JSON.parse(localStorage.getItem("revInfo"));
+            var calendarEl = document.getElementById('calendar');
+            var date = new Date();
+            dates = [];
+            doctorList = ["윤인재 원장", "지혜수 원장", "방은호 원장", "나현재 원장", "김태형 원장"];
+            var revInfoArray = [];
+            var revInfoArrayCover = [];
+
+            const date1 = new Date(date.getFullYear(), date.getMonth(), Number(date.getDate()) + 1);
+            const date2 = new Date(date.getFullYear(), date.getMonth(), Number(date.getDate()) + 30);
+            for (let index = 0; index < (date2 - date1) / (3600 * 24 * 1000); index++) {
+                dates[index] = new Date(date.getFullYear(), date.getMonth(), Number(date.getDate()) + 1 + index);
+            }
+            //예약 가능, 불가능날짜 나워서 배열저장
+            var models = new Array();
+            var modelsFalse = new Array();
+            for (let index = 0; index < revInfo.length; index++) {
+                revInfoArray.push(revInfo[index].revDate + revInfo[index].revDoctor)
+            }
+
+            for (let index = 0; index < doctorList.length; index++) {
+                for (let index2 = 0; index2 < dates.length; index2++) {
+                    var revDate = dates[index2].getFullYear() + "-" + ("0" + (Number(dates[index2].getMonth()) + 1)).slice(-2) + "-" + ("0" + dates[index2].getDate()).slice(-2)
+                        //예약가능한 날짜 뿌리기
+                    if (revInfoArray.includes(revDate + doctorList[index]) == false) {
+                        var dateInfo = new Object();
+                        dateInfo.title = doctorList[index];
+                        dateInfo.start = revDate + "T16:00:00";
+                        dateInfo.id = "revPossible"
+                        models.push(dateInfo);
+                        //예약불가능한 날짜 뿌리기
+                    } else {
+                        var dateInfo = new Object();
+                        dateInfo.title = doctorList[index];
+                        dateInfo.start = revDate + "T16:00:00";
+
+                        modelsFalse.push(dateInfo);
+                    }
+
+                }
+            }
+            var date = new Date();
+            //FullCalender 라이브러리 사용
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialDate: date.getFullYear() + "-" + ("0" + (Number(date.getMonth()) + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2),
+                editable: false,
+                selectable: false,
+                businessHours: true,
+                dayMaxEvents: true,
+                eventSources: [{
+                    //예약 불가능한 이벤트 뿌리기
+                    events: modelsFalse,
+                    color: "gray",
+
+                }, {
+                    ////예약 가능한 이벤트 뿌리기
+                    events: models,
+                    color: "#3788d8",
+                    id: "revPossible"
+                }],
+
+                eventClick: function(arg) {
+                    if (localStorage.getItem("animal_admin") == null) {
+                        var loginLocation = confirm('로그인 이후 사용 가능합니다. 로그인 하시겠습니까?')
+                        if (loginLocation) {
+                            return location.href = "login.html"
+                        }
+                    } else if (localStorage.getItem("onceRev") == "1") {
+                        return alert("하나 이상의 예약을 할 수 없습니다.")
+                    } else if (arg.event.id == "revPossible") {
+                        revData.$data.revDoctor = arg.event.title;
+                        revData.$data.revDate = (arg.event.start.getFullYear() + "-" + ("0" + (Number(arg.event.start.getMonth()) + 1)).slice(-2) + "-" + ("0" + arg.event.start.getDate()).slice(-2));
+                    } else {
+                        alert("이미 예약된 날짜입니다. 다른 날짜를 선택해주세요.")
+                    }
+
+                },
+            });
+
+            calendar.render();
+        });
+
+        function locationBack() {
+            location.reload()
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <div class='inner-wrapper'>
+            <header class="header">
+                <!-- 로고 부분 -->
+                <div class='header-left'>
+                    <a href=' index.html'>
+                        <img src='img/logo2.png' alt='logo '>
+                        <span>미정이네<br>
+                        <strong>동물병원</strong></span>
+                    </a>
+                </div>
+                <!-- 메뉴 부분 -->
+                <div class='header-center '>
+                    <ul class=''>
+                        <li class=''>
+                            <a href='chart.html'>
+                                <span>병원소개</span>
+                                <!-- <ul class=''>
+                        <li class=''><a href=''>나와라</a></li>
+                        <li class=''><a href=''>나와라</a></li>
+                        <li class=''><a href=''>나와라</a></li>
+                    </ul> -->
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='index_rev1.html'>
+                                <span>진료예약</span>
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='boardIndex.html'>
+                                <span>Q & A</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- 로그인 부분 -->
+                <div class='header-right' id='app'>
+                    <ul class=' ' v-if="!isLogin">
+                        <li class=' '>
+                            <a href='login.html'>
+                                <h2>로그인</h2>
+                            </a>
+                        </li>
+                        <li class=' '>
+                            <a href='register.html'>
+                                <h2>회원가입</h2>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class=' ' v-if="isLogin">
+                        <li class=' '>
+                            <a href="#" @click="logout">
+                                <h2>로그아웃</h2>
+                            </a>
+                        </li>
+                        <li class=' ' v-if="localStorage.getItem('animal_admin') == 0">
+                            <a href='mypage.html'>
+                                <h2>마이페이지</h2>
+                            </a>
+                        </li>
+                        <li class=' ' v-if="localStorage.getItem('animal_admin') == 1">
+                            <a href='Adminpage.html'>
+                                <h2>관리자페이지</h2>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+            <br><br><br>
+            <section class='visual'>
+                <div class='con'>
+                    <div class='slide'>
+                        <div class='title'>
+                            <span>진료예약</span>
+                        </div>
+                    </div>
+                </div>
+                <br><br>
+                <div id='calendar'></div>
+                <br>
+                <div id="rev_app">
+                    <span v-if="revDoctor==''"> 
+            <br><br><br><br><br><br><br><br><br><br><br><br>
+
+            <img src="https://www.flaticon.com/svg/static/icons/svg/0/49.svg" style="opacity: 0.5; width: 100px; display: block; margin: 0px auto;"><br><br>
+            <h2 style="display: block; margin: 0px auto; opacity: 0.5; text-align: center;">왼쪽의 날짜와 원장님을 선택해주세요.</h2><br>
+            <img src="./img/blue.png" style="opacity: 1; width: 27px; display: block; margin: 0px auto;"> <h2 style="display: block; margin: 0px auto; opacity: 0.5; text-align: center;">예약 가능 날짜</h2><br>
+            <img src="./img/gray.png" style="opacity: 1; width: 30px; display: block; margin: 0px auto;"> <h2 style="display: block; margin: 0px auto; opacity: 0.5; text-align: center;">예약 불가 날짜</h2>
+            </span>
+                    <form action="#" method="POST" name="frmForm" id="_frmForm" @submit.prevent="reservation" v-else>
+                        <table class="type04">
+                            <thead>
+                                <h2 id="thead04"> 예약 상세조회<button id="buttonBack" onclick="locationBack()">Back</button></h2><br>
+
+                            </thead>
+
+                            <tr>
+                                <th scope="row">예약날짜</th>
+                                <td><b>{{revDate}}</b></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">동물카테고리</th>
+                                <td>
+                                    <select class="select" required v-model="revAnimalType">
+                                <option value="" disabled selected hidden>동물종류를 선택해주세요</option>
+                                <option>멍멍이</option>
+                                <option>냥이</option>
+                                <option>조류</option>
+                                <option>파충류</option>
+                                <option>기타</option>
+                            </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">담당의사
+                                </th>
+                                <td><b>{{revDoctor}}</b></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">증상
+                                </th>
+                                <td><textarea placeholder="   반려동물의 증상을 200자 이내로 입력해주세요." cols="40" rows="8" style="border-radius: 6px;" v-model="revComment"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="text-align: center;"><button id="buttonRev" type="submit">예약하기</button></td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+
+        <footer include-html='./source/footer.html'>
+        </footer>
+        <script>
+            var revData = new Vue({
+                el: "#rev_app ",
+                data() {
+                    return {
+                        info: [],
+                        loading: true,
+                        errored: false,
+                        revDate: "",
+                        revDoctor: "",
+                        revComment: "",
+                        revAnimalType: "",
+                        custId: localStorage.getItem("animal_login"),
+                        title: "",
+                        revHisDate: "",
+                        revHisDoctor: "",
+                        revHisComment: "",
+                        revHisAnimalType: ""
+                    } //return 
+                }, //date
+
+                methods: {
+                    reservation() {
+                        axios
+                            .put("http://127.0.0.1:7000/mijung/changeCustRev0/" + this.custId)
+                            .then(function(response) {
+                                localStorage.setItem("onceRev", 1);
+                            })
+                            .catch(error => {
+                                console.log(error);
+                                this.errored = true
+                            })
+                            .finally(() => this.loading = false)
+                        axios
+                            .post("http://127.0.0.1:7000/mijung/reservation", {
+                                revDate: this.revDate,
+                                revDoctor: this.revDoctor,
+                                revComment: this.revComment,
+                                revAnimalType: this.revAnimalType,
+                                custId: this.custId
+                            }) //post
+                            .then(function(response) {
+                                alert("예약 완료되셨습니다.");
+                                location.reload()
+                                localStorage.setItem("reLoad", 1);
+
+                            }) //then
+                            .catch(error => {
+                                console.log(error);
+                                this.errored = true
+                                alert("예약 실패하셨습니다.");
+                            }) //catch
+                            .finally(() => this.loading = false)
+
+                        axios
+                            .get("http://localhost:7000/mijung/findId/" + JSON.parse(localStorage.getItem("info")).custName + "/" + JSON.parse(localStorage.getItem("info")).custPhone)
+                            .then(response => {
+                                localStorage.setItem("info", JSON.stringify(response.data))
+                                location.reload()
+                            })
+                            .catch(error => {
+                                this.errored = true
+                            })
+                            .finally(() => this.loading = false)
+                        axios
+                            .post("http://127.0.0.1:7000/mijung/addReservationHistory", {
+                                revHisDate: this.revDate,
+                                revHisDoctor: this.revDoctor,
+                                revHisComment: this.revComment,
+                                revHisAnimalType: this.revAnimalType,
+                                custId: this.custId
+                            }) //post
+                            .then(function(response) {
+                                location.reload()
+                            }) //then
+                            .catch(error => {
+                                console.log(error);
+                                this.errored = true
+                            }) //catch
+                            .finally(() => this.loading = false)
+
+                    } //reservation
+                }, //methods
+                mounted() {
+                    axios
+                        .get("http://127.0.0.1:7000/mijung/getAllReservation")
+                        .then(response => {
+                            this.info = response.data
+                            localStorage.setItem("revInfo", JSON.stringify(this.info))
+                            if (localStorage.getItem("reLoad") == 1) {
+                                location.reload()
+                                localStorage.removeItem("reLoad");
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            this.errored = true
+                        })
+                        .finally(() => this.loading = false)
+                }
+
+            }); //vue
+            new Vue({
+                el: "#app",
+                data: {
+                    isLogin: false
+                },
+                mounted() {
+                    if (localStorage.getItem("animal_login") != null) {
+                        this.isLogin = true;
+                    }
+                },
+                methods: {
+                    logout() {
+                        let con_logout = confirm("로그아웃 하시겠습니까");
+                        if (con_logout) {
+                            localStorage.removeItem("info");
+                            localStorage.removeItem("animal_name");
+                            localStorage.removeItem("animal_login");
+                            localStorage.removeItem("animal_admin");
+                            location.reload();
+                        }
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+<script>
+    includeHTML();
+</script>
+
+</html>
